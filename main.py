@@ -19,6 +19,7 @@ def input_error(func):
             return func()
         except IndexError:
             print(f"Not enough params")
+            func()
         
     return inner
         
