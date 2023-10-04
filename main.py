@@ -46,7 +46,7 @@ def func_change():
     CONTACTS_LIST.remove(existing_contact)
     CONTACTS_LIST.add(edited_contact)
 
-    print(f"contact {edited_contact.name} was succesfully updated with the numer: {edited_contact.phone}")  
+    print(f"contact {edited_contact.name} was succesfully updated with the phone: {edited_contact.phone}")  
 
     return get_input()
 
@@ -97,6 +97,7 @@ def main() -> str:
     
     while True:
         user_input = input(">>> ").lower()        
+
         define_command(user_input)
         if user_input in ["", "exit", "."]:
             break
