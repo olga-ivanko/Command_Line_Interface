@@ -4,8 +4,6 @@ import collections
 Contact = collections.namedtuple('Contact', ['name', 'phone'])
 CONTACTS_LIST = set()
 
-
-
 #raction on hello   
 def func_hello() -> None:
     print ("How can I help you?")
@@ -40,6 +38,7 @@ def input_error(func):
                 pass
     return inner
 
+#converting number in propper format
 @input_error        
 def sanitize_phone_number(phone, func):
 
@@ -81,7 +80,6 @@ def func_add():
 
 
 #changing the number of existing contact 
-
 def func_change():
     if len(CONTACTS_LIST)!=0:
         input_name = input("Please enter the name of the contact for changing: ").upper().strip()
@@ -94,7 +92,6 @@ def func_change():
                 edited_contact = Contact(input_name, new_phone)
                 CONTACTS_LIST.remove(existing_contact)
                 CONTACTS_LIST.add(edited_contact)
-
                 print(f"contact {edited_contact.name} was succesfully updated with the phone: {edited_contact.phone}")
             else: 
                 exit
@@ -112,7 +109,7 @@ def func_phone():
         return get_input()
     input_name = input("Please enter the name for search: ").upper().strip()
     for contact in filter(lambda x: x.name == input_name, CONTACTS_LIST):
-            found_contact = contact
+        found_contact = contact
             
     if found_contact: 
         print(contact.phone)
