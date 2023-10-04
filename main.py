@@ -24,15 +24,39 @@ def input_error(func):
     return inner
         
 
+def sanitize_phone_number(phone):
+    new_phone = (
+        phone.strip()
+            .removeprefix("+")
+            .replace("(", "")
+            .replace(")", "")
+            .replace("-", "")
+            .replace(" ", "")
+    )
+    if len(new_phone) == 12:
+        return "+" + new_phone
+    elif len(new_phone) == 10:
+        return "+38" + new_phone
+    else: 
+        print(f"please check the phone {phone}")
+        func_add()
+        return None
+
+
 #adding new Contact to the contacts list
 @input_error 
 def func_add():
     contact_ = input("Enter name and phone: ").upper()
-    name, phone = contact_.split()[0], contact_.split()[1]
+    name = contact_.split()[0] 
+    phone = sanitize_phone_number(contact_.split()[1])
     new_contact = Contact(name, phone)
-    CONTACTS_LIST.add(new_contact)
-    print(f"New contact with name: {new_contact.name} and with number: {new_contact.phone} succesfully added")
-    return get_input()
+    if new_contact in CONTACTS_LIST:
+        print(f"Contact {new_contact} already exist")
+        return func_hello()
+    else:
+        CONTACTS_LIST.add(new_contact)
+        print(f"New contact with name: {new_contact.name} and with number: {new_contact.phone} succesfully added")
+        return get_input()
 
 
 
