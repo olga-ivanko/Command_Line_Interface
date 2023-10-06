@@ -1,47 +1,17 @@
-import collections
+records = {}
 
 
-Contact = collections.namedtuple('Contact', ['name', 'phone'])
-CONTACTS_LIST = set()
-
-#raction on hello   
-def func_hello() -> None:
-    print ("How can I help you?")
-    next_func = define_command(user_input=input(">>> "))
-    return next_func
-
-#decorator for errors
-def input_error(func):
+def user_error(func):
     def inner(*args):
-        if func == func_add:
-            try:
-                return func(*args)
-            except IndexError:
-                print(f"Not enough params")
-                func()
-        else:    
-            try:
-                return func(*args)
-            except IndexError:
-                print(f"Not enough params")
-                func_add()
-            except UnboundLocalError:
-                print(f"The contact for change was not found")
-                get_input()
-            except TypeError:
-                if args == "":
-                    func_good_bye()
-                else:
-                    print(f"Unknown command: {args[0]}. Try again")
-                    get_input()
-            except KeyError:
-                pass
+        try:
+            return func(*args)
+        except IndexError:
+            return "Not enough params. Use help."
+        except KeyError:
+            return "Unknown rec_id. Try another or use help."
     return inner
 
-#converting number in propper format
-@input_error        
-def sanitize_phone_number(phone, func):
-
+def func_normalize_phone(phone):
     new_phone = (
         phone.strip()
             .removeprefix("+")
@@ -55,97 +25,61 @@ def sanitize_phone_number(phone, func):
     elif len(new_phone) == 10:
         return "+38" + new_phone
     else: 
-        print(f"please check the phone {phone}")
-        return func()
+        return None
 
 
+@user_error
+def func_add(*args):
+    rec_id = args[0]
+    phone = args[1]
+    new_phone = func_normalize_phone(phone)
 
-#adding new Contact to the contacts list
-@input_error 
-def func_add():
-    contact_ = input("Enter name and phone: ").upper()
-    if contact_ == "":
-        func_good_bye()
-    name = contact_.split()[0] 
-    phone = sanitize_phone_number(contact_.split()[1], func_add)
-    new_contact = Contact(name, phone)
-    if new_contact in CONTACTS_LIST:
-        print(f"Contact {new_contact} already exist")
-        return get_input()
-    else:
-        CONTACTS_LIST.add(new_contact)
-        print(f"New contact with name: {new_contact.name} and with number: {new_contact.phone} succesfully added")
-        return get_input()
+    if rec_id.lower() in records.keys() and new_phone in records.values():
+        return f"Record alredy exist"
+    elif new_phone == None: 
+        return f"Check the phone: {phone}. Wrong format."
+     
+    records[rec_id] = new_phone
+    return f"Add record {rec_id = }, {new_phone = }"
 
 
+@user_error
+def func_change(*args):
+    rec_id = args[0]
+    new_phone = func_normalize_phone(args[1])
+    rec = records[rec_id]
+    if new_phone == None: 
+        return f"Check the phone: {args[1]}. Wrong format."
+    if rec:
+        records[rec_id] = new_phone
+        return f"Change record {rec_id = }, {new_phone = }"
+    
+def func_phone(*args):
+    rec_id = args[0].lower()
+    return f"Phone of {rec_id} is {records.get(rec_id)}"
+    
 
-#changing the number of existing contact 
-def func_change():
-    if len(CONTACTS_LIST)!=0:
-        input_name = input("Please enter the name of the contact for changing: ").upper().strip()
+def func_hello(*args):
+    return f"How can I help you?"
 
-        for i in filter(lambda x: x.name == input_name, CONTACTS_LIST):
-            existing_contact = i
-        if existing_contact:
-            new_phone = sanitize_phone_number(input("Please enter new phone: "), func_change) 
-            if new_phone != None:
-                edited_contact = Contact(input_name, new_phone)
-                CONTACTS_LIST.remove(existing_contact)
-                CONTACTS_LIST.add(edited_contact)
-                print(f"contact {edited_contact.name} was succesfully updated with the phone: {edited_contact.phone}")
-            else: 
-                exit
-        else: 
-            print(f"contact {input_name} was not found")
-    else: 
-        print("You have no contacts in contacts list")
+def func_show_all(*args):
+    if len(records)==0:
+        return f"Your contacts list is empty"
+    f_string_generator = lambda d: "\n".join([f"{rec_id}: {phone}" for rec_id, phone in d.items()])
+    result = f_string_generator(records) 
+    return result
+    
 
-    return get_input()
+def unknown(*args):
+    return "Unknown command. Try again."
 
-#search phone in contacts list
-def func_phone():
-    if len(CONTACTS_LIST) == 0:
-        print("You have no contacts in contacts list")
-        return get_input()
-    input_name = input("Please enter the name for search: ").upper().strip()
-    for contact in filter(lambda x: x.name == input_name, CONTACTS_LIST):
-        found_contact = contact
-            
-    if found_contact: 
-        print(contact.phone)
-    else:
-        print(f"you have no contact with name {input_name}")
-    return get_input()
-
-#show all contacts saved in contacts list 
-def func_show_all():
-    if len(CONTACTS_LIST) == 0:
-        print("You have no contacts in contacts list")
-    for contact in CONTACTS_LIST:
-        print(f"{contact.name} {contact.phone}")
-    return get_input()
-
-#reaction on exit key word
-def func_good_bye():
-    print("Good bye!")
+def func_good_bye(*args):
+    print(f"Good bye!")
     exit()
+        
 
 
-#getting input as param for define_command
-@input_error
-def get_input():
-    user_input = input("Enter the command >>>  ")
-    return define_command(user_input) 
-
-#the func finds the command from dict by key word
-
-@input_error
-def define_command(user_input):
-
-    if user_input == None:
-        exit 
-
-    FUNCTIONS = {"hello" : func_hello,
+FUNCTIONS = {"hello" : func_hello,
             "add" : func_add,
             "change" : func_change, 
             "phone" : func_phone,
@@ -154,24 +88,22 @@ def define_command(user_input):
             "close" : func_good_bye, 
             "exit" : func_good_bye,
             "": func_good_bye}
-    
-    run_func = FUNCTIONS.get(user_input.lower())()
-    return run_func
 
-def main() -> None:
-    
+
+def parser(text: str):
+    for func in FUNCTIONS.keys():
+        if text.startswith(func):
+            return func, text[len(func):].strip().split()
+    return unknown, []
+
+
+def main():
     while True:
-
-        user_input = input("Enter the command >>> ").lower()
-        define_command(user_input)
-        if user_input == "":
-            break
-
-    return None
-
-    
-
-
+        user_input = input(">>>")
+        func, data = parser(user_input.lower())
+        current_func = FUNCTIONS.get(func)
+        print(current_func(*data))
+        
+        
 if __name__ == '__main__':
-
     main()
