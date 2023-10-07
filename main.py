@@ -11,6 +11,7 @@ def user_error(func):
             return "Unknown rec_id. Try another or use help."
     return inner
 
+
 def func_normalize_phone(phone):
     new_phone = (
         phone.strip()
@@ -54,6 +55,8 @@ def func_change(*args):
         records[rec_id] = new_phone
         return f"Change record {rec_id = }, {new_phone = }"
     
+
+@user_error    
 def func_phone(*args):
     rec_id = args[0].lower()
     return f"Phone of {rec_id} is {records.get(rec_id)}"
@@ -61,6 +64,7 @@ def func_phone(*args):
 
 def func_hello(*args):
     return f"How can I help you?"
+
 
 def func_show_all(*args):
     if len(records)==0:
@@ -73,11 +77,11 @@ def func_show_all(*args):
 def unknown(*args):
     return "Unknown command. Try again."
 
+
 def func_good_bye(*args):
     print(f"Good bye!")
     exit()
         
-
 
 FUNCTIONS = {"hello" : func_hello,
             "add" : func_add,
